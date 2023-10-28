@@ -155,7 +155,7 @@ No known bugs at this time.
 
 ## Authors
 John Mwadime - [Github](https://github.com/Scott-TechStar) / [Twitter](https://twitter.com/JohnnieCourtnie)  
-
+Jerry Kajik - [Github](https://github.com/Jerry-kjk)
 
 Second part of Airbnb: Joann Vuong
 ## License
