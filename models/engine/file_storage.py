@@ -5,15 +5,15 @@ This is module file_storage
 This module defines one class FileStorage.
 This class hadles saving the information in json in a file
 """
-from datetime import datetime
 import json
-from models.amenity import Amenity
+from datetime import datetime
 from models.base_model import BaseModel
+from models.user import User
+from models.amenity import Amenity
 from models.city import City
 from models.place import Place
 from models.review import Review
 from models.state import State
-from models.user import User
 # from models import storage
 import os
 
@@ -42,6 +42,13 @@ class FileStorage:
                                    "State": State}
         self.reload()
 
+    @property
+    def available_classes(self):
+        """
+        Returns Available classes
+        """
+        return (self.__models_available)
+
     def all(self, cls=None):
         """
         Returns the required objects
@@ -53,9 +60,9 @@ class FileStorage:
             return FileStorage.__objects
         else:
             result = {}
-            for k, v in FileStorage.__objects.items():
-                if v.__class__.__name__ == cls:
-                    result[k] = v
+            for index, item in FileStorage.__objects.items():
+                if item.__class__.__name__ == cls:
+                    result[index] = item
             return result
 
     def new(self, obj):
@@ -68,11 +75,37 @@ class FileStorage:
         if obj is not None:
             FileStorage.__objects[obj.id] = obj
 
+    def get(self, cls, id):
+        """
+        get an object from the json file
+        returns none if cls or id is not found in the json file
+        """
+        if cls not in FileStorage.__objects.items():
+            return(None)
+        for cls_instance in FileStorage.__objects.items():
+            if cls_instance['id'] == id:
+                return(class_instance)
+        return(None)
+
+    def count(self, cls=None):
+        """
+        Count the number of objects that belong to a class
+        Defaults to None, which returns a
+        count of all objects in the json file
+        """
+        if cls is not None:
+            if cls in FileStorage.__objects.items():
+                return(len(self.all(cls)))
+        else:
+            return(len(self.all()))
+
     def save(self):
-        """puts all the object to file after serializing them"""
+        """
+        Saves objects to a json formatted file
+        """
         store = {}
         for k in FileStorage.__objects.keys():
-            store[k] = FileStorage.__objects[k].to_json(True)
+            store[k] = FileStorage.__objects[k].to_json()
         with open(FileStorage.__file_path, mode="w+", encoding="utf-8") as fd:
             fd.write(json.dumps(store))
 
@@ -104,39 +137,3 @@ class FileStorage:
     def close(self):
         """Close a session"""
         self.reload()
-
-    def get(self, cls, id_):
-        """
-        Retrieve one object
-
-        Arguments:
-            cls: string representing a class name
-            id_: string representing the object id
-
-        Return:
-           object of cls and id passed in argument
-        """
-        if (cls not in self.__models_available.keys()) or (id_ is None):
-            return None
-        all_objs = self.all(cls)
-        for k in all_objs.keys():
-            if k == id_:
-                return all_objs[k]
-        return None
-
-    def count(self, cls=None):
-        """
-        Number of objects in a certain class
-
-        Arguments:
-            cls: String representing a class name (default None)
-
-        Return:
-            number of objects in that class or in total.
-            -1 if the class is not valid
-        """
-        if cls is None:
-            return len(self.__objects)
-        if cls in self.__models_available:
-            return len(self.all(cls))
-        return -1
